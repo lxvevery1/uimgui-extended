@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using ImGuiNET;
 using UImGui.Assets;
@@ -11,13 +10,6 @@ using Zenject;
 
 namespace UImGui
 {
-    public interface ICameraProvider
-    {
-        Camera CurrentCamera { get; }
-
-        event Action<Camera> CameraChanged;
-    }
-
 	// TODO: Check Multithread run.
 	public class UImGui : MonoBehaviour
 	{
