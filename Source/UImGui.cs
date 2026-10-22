@@ -9,6 +9,13 @@ using UnityEngine;
 using Zenject;
 using sKILLERS;
 
+public interface ICameraProvider
+{
+    Camera CurrentCamera { get; }
+
+    event Action<Camera> CameraChanged;
+}
+
 namespace UImGui
 {
 	// TODO: Check Multithread run.
