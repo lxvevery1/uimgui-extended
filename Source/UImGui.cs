@@ -6,9 +6,17 @@ using UImGui.Platform;
 using UImGui.Renderer;
 using UImGui.VR;
 using UnityEngine;
+using Zenject;
 
 namespace UImGui
 {
+    public interface ICameraProvider
+    {
+        Camera CurrentCamera { get; }
+
+        event Action<Camera> CameraChanged;
+    }
+
 	// TODO: Check Multithread run.
 	public class UImGui : MonoBehaviour
 	{
@@ -16,8 +24,8 @@ namespace UImGui
 		private IRenderer _renderer;
 		private IPlatform _platform;
 
-		[SerializeField] private Camera _camera;
-		
+        [SerializeField] private ICameraProvider _camera;
+
 		[SerializeField]
 		private RenderType _rendererType = RenderType.Mesh;
 
@@ -73,13 +81,13 @@ namespace UImGui
 
 		[SerializeField]
 		private CursorShapesAsset _cursorShapes = null;
-		
+
 		[SerializeField]
 		private bool _doGlobalEvents = true; // Do global/default Layout event too.
 
 		private bool _isChangingCamera = false;
 		private VRContext _vrContext;
-		
+
 
 		#region Events
 		public event System.Action<UImGui> Layout;
@@ -100,6 +108,12 @@ namespace UImGui
 
 		#endregion
 
+        [Inject]
+        private void Construct(ICameraProvider camera)
+        {
+            _camera = camera;
+        }
+
 		public void Reload()
 		{
 			OnDisable();
@@ -112,7 +126,7 @@ namespace UImGui
 			ImGuiIOPtr io = ImGui.GetIO();
 			_initialConfiguration.ApplyTo(io);
 		}
-		
+
 		private void Awake()
 		{
 			_context = UImGuiUtility.CreateContext();
@@ -127,7 +141,7 @@ namespace UImGui
 				enabled = false;
 				throw new System.Exception($"Failed to start: {reason}.");
 			}
-			
+
 
 			UImGuiUtility.SetCurrentContext(_context, _vrContext);
 
@@ -193,7 +207,7 @@ namespace UImGui
 
 			Constants.PrepareFrameMarker.Begin(this);
 			_context.TextureManager.PrepareFrame(io);
-			var rect = _camera.pixelRect;
+			var rect = _camera.CurrentCamera.pixelRect;
 			//rect.width *= io.DisplayFramebufferScale.x;
 			//rect.height *= io.DisplayFramebufferScale.y;
 			_platform.PrepareFrame(io, rect);
@@ -244,6 +258,6 @@ namespace UImGui
 			_platform = platform;
 			_platform?.Initialize(io, _initialConfiguration, "Unity " + _platformType.ToString());
 		}
-		
+
 	}
 }
